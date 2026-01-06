@@ -31,9 +31,12 @@ program
       }
 
       for (const meeting of data.meetings) {
-        const date = new Date(meeting.created_at).toLocaleDateString();
-        console.log(chalk.white(`  ${chalk.bold(meeting.id.slice(0, 8))}  ${meeting.title || "Untitled"}`));
-        console.log(chalk.gray(`           ${date} • ${meeting.duration_minutes || "?"} min\n`));
+        const date = new Date(meeting.timestamp_start_utc).toLocaleDateString();
+        const duration = meeting.timestamp_end_utc && meeting.timestamp_start_utc
+          ? Math.round((new Date(meeting.timestamp_end_utc) - new Date(meeting.timestamp_start_utc)) / 60000)
+          : "?";
+        console.log(chalk.white(`  ${chalk.bold(meeting.meeting_id.slice(0, 8))}  ${meeting.title || "Untitled"}`));
+        console.log(chalk.gray(`           ${date} • ${duration} min\n`));
       }
     } catch (err) {
       console.error(chalk.red(`Error: ${err.message}`));
@@ -51,10 +54,12 @@ program
       const meeting = await client.getMeetingDetails(id);
       
       console.log(chalk.cyan(`\n📋 Meeting: ${chalk.bold(meeting.title || "Untitled")}\n`));
-      console.log(chalk.white(`  ID:          ${meeting.id}`));
-      console.log(chalk.white(`  Date:        ${new Date(meeting.created_at).toLocaleString()}`));
-      console.log(chalk.white(`  Duration:    ${meeting.duration_minutes || "?"} minutes`));
-      console.log(chalk.white(`  Participants: ${meeting.participants?.length || 0}`));
+      console.log(chalk.white(`  ID:          ${meeting.meeting_id}`));
+      console.log(chalk.white(`  Start:       ${new Date(meeting.timestamp_start_utc).toLocaleString()}`));
+      console.log(chalk.white(`  End:         ${new Date(meeting.timestamp_end_utc).toLocaleString()}`));
+      if (meeting.participants?.length) {
+        console.log(chalk.white(`  Participants: ${meeting.participants.map(p => p.name || p.email).join(", ")}`));
+      }
       if (meeting.recording_url) {
         console.log(chalk.white(`  Recording:   ${meeting.recording_url}`));
       }
@@ -75,12 +80,22 @@ program
       const data = await client.getSummary(id);
       
       console.log(chalk.cyan("\n📝 Meeting Summary:\n"));
-      console.log(data.summary || chalk.yellow("No summary available."));
+      
+      if (data.summary) {
+        console.log(data.summary);
+      } else if (data.sections) {
+        for (const section of data.sections) {
+          console.log(chalk.yellow(`\n${section.title}:\n`));
+          console.log(section.content);
+        }
+      } else {
+        console.log(chalk.yellow("No summary available."));
+      }
       
       if (data.action_items?.length) {
         console.log(chalk.cyan("\n✅ Action Items:\n"));
         for (const item of data.action_items) {
-          console.log(chalk.white(`  • ${item}`));
+          console.log(chalk.white(`  • ${typeof item === 'string' ? item : item.text || item.description}`));
         }
       }
       console.log();
@@ -103,10 +118,19 @@ program
       let output = "";
       console.log(chalk.cyan("\n📜 Transcript:\n"));
       
-      for (const entry of data.transcript || []) {
-        const line = `[${entry.timestamp}] ${chalk.bold(entry.speaker)}: ${entry.text}`;
-        console.log(line);
-        output += `[${entry.timestamp}] ${entry.speaker}: ${entry.text}\n`;
+      const transcript = data.sentences || data.transcript || data.entries || data;
+      
+      if (Array.isArray(transcript)) {
+        for (const entry of transcript) {
+          const speaker = entry.speaker || entry.speaker_name || "Unknown";
+          const text = entry.transcript || entry.text || entry.content || "";
+          const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : "";
+          const line = `[${time}] ${chalk.bold(speaker)}: ${text}`;
+          console.log(line);
+          output += `[${time}] ${speaker}: ${text}\n`;
+        }
+      } else {
+        console.log(JSON.stringify(data, null, 2));
       }
       
       if (options.output) {
@@ -132,14 +156,20 @@ program
       
       console.log(chalk.cyan("\n⭐ Highlights:\n"));
       
-      if (!data.highlights?.length) {
+      const highlights = data.highlights || data.key_moments || data;
+      
+      if (!Array.isArray(highlights) || !highlights.length) {
         console.log(chalk.yellow("No highlights available."));
+        console.log(chalk.gray("\nRaw response:"));
+        console.log(JSON.stringify(data, null, 2));
         return;
       }
 
-      for (const highlight of data.highlights) {
-        console.log(chalk.yellow(`  [${highlight.timestamp}]`));
-        console.log(chalk.white(`  ${highlight.text}\n`));
+      for (const highlight of highlights) {
+        const time = highlight.timestamp || highlight.start_time || "";
+        const text = highlight.text || highlight.content || highlight.description || "";
+        console.log(chalk.yellow(`  [${time}]`));
+        console.log(chalk.white(`  ${text}\n`));
       }
     } catch (err) {
       console.error(chalk.red(`Error: ${err.message}`));
@@ -147,15 +177,69 @@ program
     }
   });
 
-// Natural language search (placeholder)
+// Natural language search
 program
   .command("ask <query...>")
   .description("Search meetings with natural language")
-  .action(async (query) => {
-    const searchQuery = query.join(" ");
+  .option("-m, --meeting <id>", "Search in specific meeting")
+  .action(async (query, options) => {
+    const searchQuery = query.join(" ").toLowerCase();
     console.log(chalk.cyan(`\n🔍 Searching for: "${searchQuery}"\n`));
-    console.log(chalk.yellow("Natural language search coming soon..."));
-    console.log(chalk.gray("For now, use 'meetgeek list' and 'meetgeek transcript <id>' to find content.\n"));
+    
+    try {
+      const client = createClient();
+      
+      if (options.meeting) {
+        // Search in specific meeting
+        const transcript = await client.getTranscript(options.meeting);
+        const entries = transcript.sentences || transcript.transcript || transcript.entries || [];
+        
+        const matches = entries.filter(e => 
+          (e.transcript || e.text || e.content || "").toLowerCase().includes(searchQuery)
+        );
+        
+        if (matches.length) {
+          console.log(chalk.green(`Found ${matches.length} matches:\n`));
+          for (const match of matches.slice(0, 10)) {
+            const speaker = match.speaker || match.speaker_name || "Unknown";
+            const time = match.timestamp ? new Date(match.timestamp).toLocaleTimeString() : "";
+            console.log(chalk.yellow(`[${time}] ${speaker}:`));
+            console.log(chalk.white(`  ${match.transcript || match.text || match.content}\n`));
+          }
+        } else {
+          console.log(chalk.yellow("No matches found in this meeting."));
+        }
+      } else {
+        // Search across recent meetings
+        const meetings = await client.getMeetings({ limit: 10 });
+        console.log(chalk.gray(`Searching across ${meetings.meetings.length} recent meetings...\n`));
+        
+        for (const meeting of meetings.meetings) {
+          try {
+            const transcript = await client.getTranscript(meeting.meeting_id);
+            const entries = transcript.sentences || transcript.transcript || transcript.entries || [];
+            
+            const matches = entries.filter(e => 
+              (e.transcript || e.text || e.content || "").toLowerCase().includes(searchQuery)
+            );
+            
+            if (matches.length) {
+              console.log(chalk.cyan(`📋 ${meeting.title} (${matches.length} matches)`));
+              for (const match of matches.slice(0, 3)) {
+                const speaker = match.speaker || match.speaker_name || "Unknown";
+                console.log(chalk.gray(`   ${speaker}: ${(match.transcript || match.text || match.content || "").slice(0, 100)}...`));
+              }
+              console.log();
+            }
+          } catch (e) {
+            // Skip meetings without transcripts
+          }
+        }
+      }
+    } catch (err) {
+      console.error(chalk.red(`Error: ${err.message}`));
+      process.exit(1);
+    }
   });
 
 program.parse();
