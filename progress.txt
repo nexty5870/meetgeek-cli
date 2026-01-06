@@ -25,3 +25,10 @@ Goal: CLI tool for MeetGeek meeting intelligence
 - Using chalk for colored output
 - Transcript supports --output flag for saving
 - Ask command is placeholder for now
+
+## Iteration 3 - Story 8: Natural language search
+- Discovered actual API response format differs from MCP reference
+- sentences[] array with 'transcript' field for text
+- Search working with -m flag for specific meeting
+- Search across all meetings also works
+- Tested with Czesia call - found PDF and Slack discussions

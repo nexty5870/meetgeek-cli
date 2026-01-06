@@ -116,7 +116,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     }
   ]
 }
