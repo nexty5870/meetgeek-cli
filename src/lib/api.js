@@ -3,14 +3,16 @@
  * Based on reference/mcp-server/src/services/meetgeek-api.ts
  */
 
+import { getApiKey } from "./config.js";
+
 const BASE_URL = process.env.MEETGEEK_BASE_URL || "https://api.meetgeek.ai/v1";
 
 export class MeetGeekClient {
-  constructor(apiKey = process.env.MEETGEEK_API_KEY) {
-    if (!apiKey) {
-      throw new Error("MEETGEEK_API_KEY environment variable is required");
+  constructor(apiKey) {
+    this.apiKey = apiKey || getApiKey();
+    if (!this.apiKey) {
+      throw new Error("No API key found. Run 'meetgeek auth' to set up your API key.");
     }
-    this.apiKey = apiKey;
     this.baseUrl = BASE_URL;
   }
 

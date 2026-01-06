@@ -6,6 +6,8 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { createClient } from "./lib/api.js";
+import { getApiKey, setApiKey, clearApiKey, getConfigPath } from "./lib/config.js";
+import { createInterface } from "readline";
 
 const program = new Command();
 
@@ -13,6 +15,79 @@ program
   .name("meetgeek")
   .description("CLI for MeetGeek meeting intelligence")
   .version("0.1.0");
+
+// Auth command
+program
+  .command("auth")
+  .description("Set up your MeetGeek API key")
+  .option("--clear", "Remove saved API key")
+  .option("--show", "Show current API key status")
+  .action(async (options) => {
+    if (options.clear) {
+      clearApiKey();
+      console.log(chalk.green("✅ API key removed."));
+      return;
+    }
+
+    if (options.show) {
+      const key = getApiKey();
+      if (key) {
+        console.log(chalk.green(`✅ API key configured (${key.slice(0, 8)}...${key.slice(-4)})`));
+        console.log(chalk.gray(`   Config: ${getConfigPath()}`));
+      } else {
+        console.log(chalk.yellow("⚠️  No API key configured. Run 'meetgeek auth' to set up."));
+      }
+      return;
+    }
+
+    console.log(chalk.cyan("\n🔐 MeetGeek API Setup\n"));
+    console.log(chalk.white("To get your API key:"));
+    console.log(chalk.gray("  1. Log in to https://meetgeek.ai"));
+    console.log(chalk.gray("  2. Go to Integrations"));
+    console.log(chalk.gray("  3. Find 'Public API Integration'"));
+    console.log(chalk.gray("  4. Generate or copy your API key\n"));
+
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    const question = (prompt) => new Promise((resolve) => {
+      rl.question(prompt, (answer) => {
+        resolve(answer);
+      });
+    });
+
+    try {
+      const apiKey = await question(chalk.yellow("Paste your API key: "));
+      rl.close();
+
+      if (!apiKey || apiKey.trim().length < 10) {
+        console.log(chalk.red("\n❌ Invalid API key."));
+        process.exit(1);
+      }
+
+      // Test the key
+      console.log(chalk.gray("\nVerifying API key..."));
+      const { MeetGeekClient } = await import("./lib/api.js");
+      const client = new MeetGeekClient(apiKey.trim());
+      
+      try {
+        await client.getMeetings({ limit: 1 });
+        setApiKey(apiKey.trim());
+        console.log(chalk.green("\n✅ API key verified and saved!"));
+        console.log(chalk.gray(`   Config: ${getConfigPath()}`));
+        console.log(chalk.cyan("\nTry 'meetgeek list' to see your meetings."));
+      } catch (e) {
+        console.log(chalk.red(`\n❌ API key verification failed: ${e.message}`));
+        process.exit(1);
+      }
+    } catch (e) {
+      rl.close();
+      console.log(chalk.red(`\nError: ${e.message}`));
+      process.exit(1);
+    }
+  });
 
 // List meetings
 program
