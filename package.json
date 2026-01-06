@@ -1,0 +1,19 @@
+{
+  "name": "meetgeek-cli",
+  "version": "0.1.0",
+  "description": "CLI for MeetGeek meeting intelligence",
+  "type": "module",
+  "bin": {
+    "meetgeek": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0"
+  },
+  "keywords": ["meetgeek", "meetings", "cli", "transcription"],
+  "author": "Quentin Daems (@ShvZFR)",
+  "license": "MIT"
+}
