@@ -30,7 +30,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     },
     {
       "id": "3",
@@ -45,7 +45,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     },
     {
       "id": "4",
@@ -59,7 +59,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     },
     {
       "id": "5",
@@ -73,7 +73,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     },
     {
       "id": "6",
@@ -87,7 +87,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     },
     {
       "id": "7",
@@ -101,7 +101,7 @@
       ],
       "requiresBrowser": false,
       "verifyUrl": null,
-      "passes": false
+      "passes": true
     },
     {
       "id": "8",

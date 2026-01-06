@@ -17,3 +17,11 @@ Goal: CLI tool for MeetGeek meeting intelligence
 - Implemented MeetGeekClient in src/lib/api.js
 - Uses fetch API (built into Node 18+)
 - All endpoints from MCP reference implemented
+
+## Iteration 2 - Stories 2-7: Full CLI implementation
+- Created comprehensive CLI with all commands in one go
+- Commands: list, show, summary, transcript, highlights, ask
+- Using commander.js for argument parsing
+- Using chalk for colored output
+- Transcript supports --output flag for saving
+- Ask command is placeholder for now
