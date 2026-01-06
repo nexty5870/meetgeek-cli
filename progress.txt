@@ -11,3 +11,9 @@ Goal: CLI tool for MeetGeek meeting intelligence
 ## Learnings
 
 (Ralph will append patterns here)
+
+## Iteration 1 - Story 1: Project setup and API client
+- Created package.json with meetgeek bin entry
+- Implemented MeetGeekClient in src/lib/api.js
+- Uses fetch API (built into Node 18+)
+- All endpoints from MCP reference implemented
