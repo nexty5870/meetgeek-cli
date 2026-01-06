@@ -1,0 +1,13 @@
+# MeetGeek CLI - Progress Log
+
+Project: meetgeek-cli
+Started: 2026-01-06
+Goal: CLI tool for MeetGeek meeting intelligence
+
+## Reference
+- MCP server source: reference/mcp-server/
+- API base: https://api.meetgeek.ai/v1
+
+## Learnings
+
+(Ralph will append patterns here)

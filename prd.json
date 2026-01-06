@@ -1,0 +1,122 @@
+{
+  "project": "meetgeek-cli",
+  "branchName": "feat/cli",
+  "description": "CLI tool to interact with MeetGeek API for retrieving meeting details, transcripts, summaries, and highlights",
+  "stories": [
+    {
+      "id": "1",
+      "title": "Project setup and API client",
+      "description": "Create package.json, set up project structure, and implement MeetGeek API client based on the MCP server reference",
+      "priority": 1,
+      "acceptance": [
+        "package.json with meetgeek-cli as bin",
+        "src/lib/api.js with MeetGeekClient class",
+        "Supports MEETGEEK_API_KEY env var",
+        "Base URL: https://api.meetgeek.ai/v1"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "2",
+      "title": "CLI scaffold with commander",
+      "description": "Set up CLI entry point with commander.js, help text, and version command",
+      "priority": 2,
+      "acceptance": [
+        "src/cli.js as entry point",
+        "meetgeek --help shows all commands",
+        "meetgeek --version shows version"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "3",
+      "title": "List meetings command",
+      "description": "Implement 'meetgeek list' to show recent meetings with title, date, duration",
+      "priority": 3,
+      "acceptance": [
+        "meetgeek list shows meetings in table format",
+        "Shows: ID, Title, Date, Duration",
+        "Supports --limit N flag",
+        "Pretty output with colors"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "4",
+      "title": "Show meeting details command",
+      "description": "Implement 'meetgeek show <id>' to display meeting metadata",
+      "priority": 4,
+      "acceptance": [
+        "meetgeek show <id> shows meeting details",
+        "Shows: title, date, participants, duration, recording URL",
+        "Pretty formatted output"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "5",
+      "title": "Get summary command",
+      "description": "Implement 'meetgeek summary <id>' to show AI-generated meeting summary",
+      "priority": 5,
+      "acceptance": [
+        "meetgeek summary <id> shows summary",
+        "Includes key points and action items",
+        "Formatted with sections"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "6",
+      "title": "Get transcript command",
+      "description": "Implement 'meetgeek transcript <id>' to show meeting transcript",
+      "priority": 6,
+      "acceptance": [
+        "meetgeek transcript <id> shows transcript",
+        "Shows speaker names with timestamps",
+        "Supports --output file.txt to save"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "7",
+      "title": "Get highlights command",
+      "description": "Implement 'meetgeek highlights <id>' to show key moments",
+      "priority": 7,
+      "acceptance": [
+        "meetgeek highlights <id> shows highlights",
+        "Shows timestamp and highlight text",
+        "Formatted list output"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    },
+    {
+      "id": "8",
+      "title": "Natural language search",
+      "description": "Implement 'meetgeek ask <query>' to search meetings using natural language",
+      "priority": 8,
+      "acceptance": [
+        "meetgeek ask 'what did we discuss about the budget?'",
+        "Searches recent meetings",
+        "Returns relevant excerpts from transcripts",
+        "Uses local processing or simple keyword matching"
+      ],
+      "requiresBrowser": false,
+      "verifyUrl": null,
+      "passes": false
+    }
+  ]
+}
